@@ -2,7 +2,7 @@
 
 namespace app\models;
 
-use phpDocumentor\Reflection\Types\Expression;
+use yii\db\Expression;
 use Yii;
 use yii\db\Query;
 
@@ -27,18 +27,19 @@ use yii\db\Query;
  * @property int $is_deleted
  *
  * @property City $city
- * @property Favorite[] $favorites
- * @property Favorite[] $favorites0
+ * @property Favorite[] $favoritesCustomer
+ * @property Favorite[] $favoritesExecutor
  * @property Feedback[] $feedbacks
- * @property Message[] $messages
- * @property Message[] $messages0
- * @property Opinion[] $opinions
- * @property Opinion[] $opinions0
+ * @property Message[] $messagesReceiver
+ * @property Message[] $messagesSender
+ * @property Opinion[] $opinionsCustomer
+ * @property Opinion[] $opinionsExecutor
+ * @property Opinion[] $opinionsExecutorRate
  * @property Portfolio[] $portfolios
  * @property Responce[] $responces
  * @property Specialisation[] $specialisations
- * @property Task[] $tasks
- * @property Task[] $tasks0
+ * @property Task[] $tasksUser
+ * @property Task[] $tasksExecutor
  * @property UserNotification[] $userNotifications
  */
 class User extends \yii\db\ActiveRecord
@@ -107,7 +108,7 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Favorites]].
+     * Gets query for [[FavoritesCustomer]].
      *
      * @return \yii\db\ActiveQuery|FavoriteQuery
      */
@@ -117,7 +118,7 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Favorites0]].
+     * Gets query for [[FavoritesExecutor]].
      *
      * @return \yii\db\ActiveQuery|FavoriteQuery
      */
@@ -137,17 +138,17 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Messages]].
+     * Gets query for [[MessagesReceiver]].
      *
      * @return \yii\db\ActiveQuery|MessageQuery
      */
-    public function getMessagesReciever()
+    public function getMessagesReceiver()
     {
         return $this->hasMany(Message::className(), ['receiver_id' => 'id']);
     }
 
     /**
-     * Gets query for [[Messages0]].
+     * Gets query for [[MessagesSender]].
      *
      * @return \yii\db\ActiveQuery|MessageQuery
      */
@@ -157,7 +158,7 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Opinions]].
+     * Gets query for [[OpinionsCustomer]].
      *
      * @return \yii\db\ActiveQuery|OpinionQuery
      */
@@ -167,7 +168,7 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Opinions0]].
+     * Gets query for [[OpinionsExecutor]].
      *
      * @return \yii\db\ActiveQuery|OpinionQuery
      */
@@ -177,7 +178,7 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Opinions0]].
+     * Gets query for [[OpinionsExecutorRate]].
      *
      * @return array|\yii\db\ActiveRecord
      * @throws \yii\db\Exception
@@ -193,13 +194,96 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
+     * Gets query for [[ExecutorOpinionsAndFeedbacks]].
+     *
+     * @return Query
+     * @throws \yii\db\Exception
+     */
+    public static function getExecutorOpinionsAndFeedbacks($id, $pagination = null): Query
+    {
+        $opinionsQuery = (new Query())
+            ->select(
+                [
+                    'o.customer_id',
+                    'task_id' => new Expression('null'),
+                    'o.executor_id',
+                    'o.rate',
+                    'o.created_at',
+                    'o.description'
+                ]
+            )
+            ->from(['o' => Opinion::tableName()])
+            ->where(['o.executor_id' => $id]);
+
+        $feedbacksQuery = (new Query())
+            ->select(
+                [
+                    'customer_id' => 'u.id',
+                    'f.task_id',
+                    'f.executor_id',
+                    'f.rate',
+                    'f.created_at',
+                    'f.description'
+                ]
+            )
+            ->from(['f' => Feedback::tableName()])
+            ->innerJoin(['t' => Task::tableName()], 't.id = f.task_id')
+            ->innerJoin(['u' => User::tableName()], 'u.id = t.customer_id')
+            ->where(['f.executor_id' => $id]);
+
+        $comments = (new Query())
+            ->from($feedbacksQuery->union($opinionsQuery))
+            ->orderBy(['created_at' => SORT_DESC]);
+
+        if ($pagination) {
+            $comments
+                ->offset($pagination->offset)
+                ->limit($pagination->limit);
+        }
+
+        return $comments;
+    }
+
+    /**
+     * Gets query for [[OpinionsExecutorRate]].
+     *
+     * @return array
+     * @throws \yii\db\Exception
+     */
+    public static function getAllExecutorRate($id): array
+    {
+        $allFeedbackQuery = self::getExecutorOpinionsAndFeedbacks($id);
+        $rateQuery = new Expression('coalesce(sum(rate), 0) / coalesce(nullif(count(rate), 0), 1)');
+        $countQuery = new Expression('count(rate)');
+
+        return (new Query())
+            ->select(
+                [
+                    'rate'  => $rateQuery,
+                    'count' => $countQuery
+                ]
+            )
+            ->from(['temp_table' => $allFeedbackQuery])
+            ->createCommand()
+            ->queryOne();
+    }
+
+    /**
      * Gets query for [[Portfolios]].
      *
      * @return \yii\db\ActiveQuery|PortfolioQuery
      */
-    public function getPortfolios()
+    public function getPortfolios($pagination = null)
     {
-        return $this->hasMany(Portfolio::className(), ['user_id' => 'id']);
+        $portfolios =  $this->hasMany(Portfolio::className(), ['user_id' => 'id']);
+
+        if ($pagination) {
+            $portfolios
+                ->offset($pagination->offset)
+                ->limit($pagination->limit);
+        }
+
+        return $portfolios;
     }
 
     /**
@@ -223,7 +307,7 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Tasks]].
+     * Gets query for [[TasksUser]].
      *
      * @return \yii\db\ActiveQuery|TaskQuery
      */
@@ -233,7 +317,7 @@ class User extends \yii\db\ActiveRecord
     }
 
     /**
-     * Gets query for [[Tasks0]].
+     * Gets query for [[TasksExecutor]].
      *
      * @return \yii\db\ActiveQuery|TaskQuery
      */
@@ -287,14 +371,76 @@ class User extends \yii\db\ActiveRecord
     /**
      * Список исполнителей
      *
-     * @return array
+     * @return UserQuery
      */
-    public static function getExecutors()
+    public static function getExecutors($filters = null): UserQuery
     {
-        return self::find()
+        $users = self::find()
             ->innerJoin(['s' => Specialisation::tableName()], 's.executor_id = `user`.id')
+            ->joinWith('opinionsExecutor')
+            ->andFilterWhere(['s.category_id' => $filters->categories ?? null])
+            ->andFilterWhere(['like', 'name', $filters->search ?? null])
             ->groupBy('`user`.id')
-            ->orderBy(['date_add' => SORT_DESC])
-            ->all();
+            ->orderBy(['date_add' => SORT_DESC]);
+
+        if ($filters->vacant ?? null) {
+            $users->JoinWith('tasksExecutor')
+                ->andWhere(['or', ['task.id' => null], ['task.status_id' => Status::STATUS_DONE]]);
+        }
+
+        if ($filters->online ?? null) {
+            $onlineExpression = new Expression('now() - interval 5 minute');
+            $users->where(['>', '`user`.date_activity', $onlineExpression]);
+        }
+
+        if ($filters->hasFeedback ?? null) {
+            $users->joinWith('opinionsExecutor');
+            $users->andWhere(['is not', 'opinion.customer_id', null]);
+        }
+
+        if ($filters->inFavorites ?? null) {
+            $users->joinWith('favoritesExecutor');
+            $users->andWhere(['is not', 'favorite.customer_id', null]);
+        }
+
+        return $users;
+    }
+
+    /**
+     * Исполнитель по id
+     *
+     * @return UserQuery
+     */
+    public static function getExecutor($filters = null): UserQuery
+    {
+        $users = self::find()
+            ->innerJoin(['s' => Specialisation::tableName()], 's.executor_id = `user`.id')
+            ->joinWith('opinionsExecutor')
+            ->andFilterWhere(['s.category_id' => $filters->categories ?? null])
+            ->andFilterWhere(['like', 'name', $filters->search ?? null])
+            ->groupBy('`user`.id')
+            ->orderBy(['date_add' => SORT_DESC]);
+
+        if ($filters->vacant ?? null) {
+            $users->JoinWith('tasksExecutor')
+                ->andWhere(['or', ['task.id' => null], ['task.status_id' => Status::STATUS_DONE]]);
+        }
+
+        if ($filters->online ?? null) {
+            $onlineExpression = new Expression('now() - interval 5 minute');
+            $users->where(['>', '`user`.date_activity', $onlineExpression]);
+        }
+
+        if ($filters->hasFeedback ?? null) {
+            $users->joinWith('opinionsExecutor');
+            $users->andWhere(['is not', 'opinion.customer_id', null]);
+        }
+
+        if ($filters->inFavorites ?? null) {
+            $users->joinWith('favoritesExecutor');
+            $users->andWhere(['is not', 'favorite.customer_id', null]);
+        }
+
+        return $users;
     }
 }

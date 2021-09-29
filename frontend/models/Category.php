@@ -76,4 +76,18 @@ class Category extends \yii\db\ActiveRecord
     {
         return new CategoryQuery(get_called_class());
     }
+
+    /**
+     * Список категорий
+     *
+     * @return array
+     */
+    public static function getCategories()
+    {
+        return self::find()
+            ->select(['name', 'icon', 'id'])
+            ->orderBy(['name' => SORT_ASC])
+            ->indexBy('id')
+            ->column();
+    }
 }

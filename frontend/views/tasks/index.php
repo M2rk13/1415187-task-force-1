@@ -1,21 +1,31 @@
 <?php
 
-/**
- * @var $tasks \frontend\controllers\TasksController
- */
-
 use backend\helpers\BaseHelper;
+use frontend\controllers\TasksController;
+use frontend\models\TasksFilter;
+use yii\data\Pagination;
 use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\widgets\ActiveForm;
+use yii\widgets\LinkPager;
+use app\models\Category;
+
+/**
+ * @var $tasks      TasksController
+ * @var $pagination Pagination
+ * @var $filters    TasksFilter
+ */
 
 ?>
 
 <section class="new-task">
     <div class="new-task__wrapper">
         <h1>Новые задания</h1>
-        <?php foreach ($tasks as $task): ?>
+
+        <?php foreach ($tasks as $task) { ?>
             <div class="new-task__card">
                 <div class="new-task__title">
-                    <a href="#" class="link-regular"><h2><?= $task->name ?></h2></a>
+                    <a href="<?= Url::to(['tasks/view', 'id' => $task->id]) ?>" class="link-regular"><h2><?= $task->name ?></h2></a>
                     <a class="new-task__type link-regular" href="#"><p><?= $task->category->name ?></p></a>
                 </div>
                 <div class="new-task__icon new-task__icon--<?= $task->category->icon ?>"></div>
@@ -29,73 +39,158 @@ use yii\helpers\Html;
                     ) ?></p>
                 <span class="new-task__time"><?= BaseHelper::time_difference($task->date_add) ?> назад</span>
             </div>
-        <?php endforeach; ?>
+        <?php } ?>
+
         <div class="new-task__pagination">
-            <ul class="new-task__pagination-list">
-                <li class="pagination__item"><a href="#"></a></li>
-                <li class="pagination__item pagination__item--current">
-                    <a>1</a></li>
-                <li class="pagination__item"><a href="#">2</a></li>
-                <li class="pagination__item"><a href="#">3</a></li>
-                <li class="pagination__item"><a href="#"></a></li>
-            </ul>
+
+            <?= LinkPager::widget(
+                [
+                    'pagination'         => $pagination,
+                    'options'            => [
+                        'class' => 'new-task__pagination-list',
+                    ],
+                    'activePageCssClass' => 'pagination__item--current',
+                    'pageCssClass'       => 'pagination__item',
+                    'prevPageCssClass'   => 'pagination__item',
+                    'nextPageCssClass'   => 'pagination__item',
+                    'nextPageLabel'      => '⠀',
+                    'prevPageLabel'      => '⠀',
+                    'hideOnSinglePage'   => true
+                ]
+            ) ?>
+
         </div>
 </section>
 <section class="search-task">
     <div class="search-task__wrapper">
-        <form class="search-task__form" name="test" method="post" action="#">
-            <fieldset class="search-task__categories">
-                <legend>Категории</legend>
-                <label class="checkbox__legend">
-                    <input class="visually-hidden checkbox__input" type="checkbox" name="" value="" checked>
-                    <span>Курьерские услуги</span>
-                </label>
-                <label class="checkbox__legend">
-                    <input class="visually-hidden checkbox__input" type="checkbox" name="" value="" checked>
-                    <span>Грузоперевозки</span>
-                </label>
-                <label class="checkbox__legend">
-                    <input class="visually-hidden checkbox__input" type="checkbox" name="" value="">
-                    <span>Переводы</span>
-                </label>
-                <label class="checkbox__legend">
-                    <input class="visually-hidden checkbox__input" type="checkbox" name="" value="">
-                    <span>Строительство и ремонт</span>
-                </label>
-                <label class="checkbox__legend">
-                    <input class="visually-hidden checkbox__input" type="checkbox" name="" value="">
-                    <span>Выгул животных</span>
-                </label>
-            </fieldset>
-            <fieldset class="search-task__categories">
-                <legend>Дополнительно</legend>
-                <div>
-                    <label class="checkbox__legend">
-                        <input class="visually-hidden checkbox__input" type="checkbox" name="" value="">
-                        <span>Без исполнителя</span>
-                    </label>
-                </div>
-                <div>
-                    <label class="checkbox__legend">
-                        <input class="visually-hidden checkbox__input" id="7" type="checkbox" name="" value=""
-                               checked>
-                        <span>Удаленная работа</span>
-                    </label>
-                </div>
-            </fieldset>
-            <div class="field-container">
-                <label class="search-task__name" for="8">Период</label>
-                <select class="multiple-select input" id="8" size="1" name="time[]">
-                    <option value="day">За день</option>
-                    <option selected value="week">За неделю</option>
-                    <option value="month">За месяц</option>
-                </select>
-            </div>
-            <div class="field-container">
-                <label class="search-task__name" for="9">Поиск по названию</label>
-                <input class="input-middle input" id="9" type="search" name="q" placeholder="">
-            </div>
-            <button class="button" type="submit">Искать</button>
-        </form>
+
+        <?php
+
+        $form = ActiveForm::begin(
+            [
+                'id'      => 'filter-form',
+                'options' => ['class' => 'search-task__form'],
+                'method'  => 'get'
+            ]
+        );
+
+        ?>
+
+        <fieldset class="search-task__categories">
+
+            <legend>Категории</legend>
+            <?php echo $form->field(
+                $filters,
+                'categories',
+                [
+                    'template'     => '{input}',
+                    'labelOptions' => ['class' => 'checkbox__legend']
+                ]
+            )->checkboxList(
+                Category::getCategories(),
+                [
+                    'item' => function ($index, $label, $name, $checked, $value) {
+                        $chek = $checked ? 'checked' : '';
+                        return "<label class=\"checkbox__legend\">
+                                <input class=\"visually-hidden checkbox__input\" type=\"checkbox\" name=\"{$name}\" value=\"{$value}\" {$chek}>
+                                <span>{$label}</span>
+                            </label>";
+                    },
+                ]
+            ) ?>
+
+        </fieldset>
+
+        <fieldset class="search-task__categories">
+            <legend>Дополнительно</legend>
+            <?php
+
+            echo $form->field(
+                $filters,
+                'noExecutor',
+                [
+                    'template' => '{input}{label}',
+                    'options'  => ['class' => ''],
+                ]
+            )
+                ->checkbox(
+                    [
+                        'class'        => 'checkbox__input visually-hidden',
+                        'uncheck'      => false,
+                        'label'        => "<span>{$filters->attributeLabels()['noExecutor']}</span>",
+                        'labelOptions' => ['class' => 'checkbox__legend']
+                    ],
+                    true
+                );
+
+            echo $form->field(
+                $filters,
+                'remoteWork',
+                [
+                    'template' => '{input}{label}',
+                    'options'  => ['class' => ''],
+                ]
+            )
+                ->checkbox(
+                    [
+                        'class'        => 'checkbox__input visually-hidden',
+                        'uncheck'      => false,
+                        'label'        => "<span>{$filters->attributeLabels()['remoteWork']}</span>",
+                        'labelOptions' => ['class' => 'checkbox__legend']
+                    ],
+                    true
+                );
+
+            ?>
+
+        </fieldset>
+
+        <?php
+
+        echo $form->field(
+            $filters,
+            'period',
+            [
+                'template'     => '{label}{input}',
+                'options'      => ['class' => ''],
+                'labelOptions' => ['class' => 'search-task__name']
+            ]
+        )
+            ->dropDownList(
+                [
+                    '1 day'   => 'За день',
+                    '1 week'  => 'За неделю',
+                    '1 month' => 'За месяц',
+                ],
+                [
+                    'class'  => 'multiple-select input',
+                    'style'  => 'width: 100%',
+                    'prompt' => 'Выберите период'
+                ]
+            );
+
+        echo $form->field(
+            $filters,
+            'search',
+            [
+                'template'     => '{label}{input}',
+                'options'      => ['class' => ''],
+                'labelOptions' => ['class' => 'search-task__name']
+            ]
+        )
+            ->input(
+                'search',
+                [
+                    'class' => 'input-middle input',
+                    'style' => 'width: 100%'
+                ]
+            );
+
+        echo Html::submitButton('Искать', ['class' => 'button']);
+
+        ActiveForm::end();
+
+        ?>
+
     </div>
 </section>

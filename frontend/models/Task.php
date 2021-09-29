@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\db\Expression;
 
 /**
  * This is the model class for table "task".
@@ -19,6 +20,7 @@ use Yii;
  * @property string|null $address
  * @property int|null $city_id Идентификатор города из таблицы городов
  * @property string|null $expire Срок исполнения задания
+ * @property string|null $address_comment
  *
  * @property Category $category
  * @property City $city
@@ -52,7 +54,7 @@ class Task extends \yii\db\ActiveRecord
             [['price'], 'number'],
             [['date_add', 'expire'], 'safe'],
             [['name'], 'string', 'max' => 128],
-            [['address'], 'string', 'max' => 255],
+            [['address', 'address_comment'], 'string', 'max' => 255],
             [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => Category::className(), 'targetAttribute' => ['category_id' => 'id']],
             [['city_id'], 'exist', 'skipOnError' => true, 'targetClass' => City::className(), 'targetAttribute' => ['city_id' => 'id']],
             [['customer_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['customer_id' => 'id']],
@@ -76,9 +78,10 @@ class Task extends \yii\db\ActiveRecord
             'customer_id' => Yii::t('app', 'Идентификатор заказчика из таблицы пользователей'),
             'date_add' => Yii::t('app', 'Date Add'),
             'executor_id' => Yii::t('app', 'Идентификатор исполнителя из таблицы пользователей'),
-            'address' => Yii::t('app', 'Address'),
+            'address' => Yii::t('app', 'Адресс'),
             'city_id' => Yii::t('app', 'Идентификатор города из таблицы городов'),
             'expire' => Yii::t('app', 'Срок исполнения задания'),
+            'address_comment' => Yii::t('app', 'Комментарий к адресу'),
         ];
     }
 
@@ -184,14 +187,42 @@ class Task extends \yii\db\ActiveRecord
     /**
      * Список новых заданий
      *
-     * @return array
+     * @return TaskQuery
      */
-    public static function getNewTasks()
+    public static function getNewTasks($filters, $pagination = null)
     {
-        return self::find()
+        $filters->period = !empty($filters->period) ? $filters->period : '100 year';
+        $dateFilter = new Expression('now() - interval ' . $filters->period);
+
+        $tasks = self::find()
             ->innerJoin(['s' => Status::tableName()], 's.id = `task`.status_id')
             ->orderBy('date_add')
-            ->where(['s.`name`' => Status::STATUS_NEW])
-            ->all();
+            ->where(
+                [
+                    'and',
+                    ['s.`name`' => Status::STATUS_NEW],
+                    ['>', 'task.date_add', $dateFilter]
+                ]
+            )
+            ->andFilterWhere(['task.category_id' => $filters->categories])
+            ->andFilterWhere(['like', 'task.name', $filters->search]);
+
+        if ($filters->remoteWork) {
+            $tasks
+                ->andWhere(['task.city_id' => null]);
+        }
+
+        if ($filters->noExecutor) {
+            $tasks
+                ->andWhere(['task.executor_id' => null]);
+        }
+
+        if ($pagination) {
+            $tasks
+                ->offset($pagination->offset)
+                ->limit($pagination->limit);
+        }
+
+        return $tasks;
     }
 }

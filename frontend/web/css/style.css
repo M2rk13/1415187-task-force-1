@@ -1570,6 +1570,17 @@ footer {
 
 .user__card-photo {
   margin-right: 70px; }
+  
+.user__card-photo .new-task__pagination {
+  padding: 0;
+}
+
+.user__card-photo .pagination__item {
+	width: 25px;
+  height: 25px;
+  opacity: 0.75;
+  background-color: #5166a6;
+}
 
 .five-stars__rate {
   padding-left: 0;
