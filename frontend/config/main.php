@@ -46,6 +46,8 @@ return [
                 'users' => 'users/index',
                 'task/view/<id:\d+>' => 'tasks/view',
                 'user/view/<id:\d+>' => 'users/view',
+                'signup' => 'signup/index',
+                'landing' => 'landing/index',
             ],
         ],
     ],

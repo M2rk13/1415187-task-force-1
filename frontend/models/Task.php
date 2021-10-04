@@ -225,4 +225,21 @@ class Task extends \yii\db\ActiveRecord
 
         return $tasks;
     }
+
+    /**
+     * Список новых заданий
+     *
+     * @return TaskQuery
+     */
+    public static function getLastTasks($limit, $status)
+    {
+        $joinRule = new Expression(
+            's.id = `task`.status_id and s.name = :status',
+            ['status' => $status]
+        );
+
+        return self::find()
+            ->innerJoin(['s' => Status::tableName()], $joinRule)
+            ->limit($limit);
+    }
 }

@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\db\Query;
 
 /**
  * This is the model class for table "city".
@@ -77,5 +78,15 @@ class City extends \yii\db\ActiveRecord
     public static function find()
     {
         return new CityQuery(get_called_class());
+    }
+
+    /**
+     * Список всех городов
+     */
+    public static function getCities()
+    {
+        return self::find()
+            ->select(['name', 'id'])
+            ->orderBy(['name' => SORT_ASC]);
     }
 }

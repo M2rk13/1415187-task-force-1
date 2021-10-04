@@ -16,6 +16,8 @@ use app\models\Category;
  * @var $filters    TasksFilter
  */
 
+$this->title = 'Задания';
+
 ?>
 
 <section class="new-task">

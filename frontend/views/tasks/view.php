@@ -8,6 +8,7 @@ use app\models\Task;
 use backend\helpers\BaseHelper;
 use yii\helpers\Url;
 
+$this->title = 'Стрница задания ' . $task->name;
 $taskCount = $task->customer->getTasksCustomer()->count();
 
 ?>

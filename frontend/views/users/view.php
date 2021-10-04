@@ -18,6 +18,7 @@ use yii\helpers\Url;
 use yii\widgets\LinkPager;
 
 $rating = round($rate['rate'], 2);
+$this->title = 'Страница пользователя ' . $user->name;
 
 ?>
 

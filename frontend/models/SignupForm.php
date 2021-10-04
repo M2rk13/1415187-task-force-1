@@ -3,18 +3,32 @@
 namespace frontend\models;
 
 use Yii;
+
+use app\models\User;
 use yii\base\Model;
-use common\models\User;
 
 /**
  * Signup form
  */
 class SignupForm extends Model
 {
-    public $username;
+    public $name;
     public $email;
+    public $city;
     public $password;
 
+    private const MAX_STRING_LENGTH = 128;
+    private const MAX_PASSWORD_LENGTH = 16;
+
+    public function attributeLabels()
+    {
+        return [
+            'email' => 'Электронная почта',
+            'name' => 'Ваше имя',
+            'city' => 'Город проживания',
+            'password' => 'Пароль'
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -22,19 +36,22 @@ class SignupForm extends Model
     public function rules()
     {
         return [
-            ['username', 'trim'],
-            ['username', 'required'],
-            ['username', 'unique', 'targetClass' => '\common\models\User', 'message' => 'This username has already been taken.'],
-            ['username', 'string', 'min' => 2, 'max' => 255],
+
+            [['email', 'name', 'city', 'password'], 'safe'],
+            [['email'], 'required', 'message' => 'Введите Ваш адрес электронной почты'],
+            [['name'], 'required', 'message' => 'Введите Ваши имя и фамилию'],
+            [['city'], 'required', 'message' => 'Укажите город, чтобы находить подходящие задачи'],
+            [['password'], 'required', 'message' => 'Введите Ваш пароль'],
 
             ['email', 'trim'],
-            ['email', 'required'],
-            ['email', 'email'],
-            ['email', 'string', 'max' => 255],
-            ['email', 'unique', 'targetClass' => '\common\models\User', 'message' => 'This email address has already been taken.'],
+            ['email', 'email', 'message' => 'Введите валидный адрес электронной почты'],
+            ['email', 'string', 'max' => self::MAX_STRING_LENGTH],
+            ['email', 'unique', 'targetClass' => '\app\models\User', 'message' => 'Пользователь с таким email уже существует'],
 
-            ['password', 'required'],
-            ['password', 'string', 'min' => Yii::$app->params['user.passwordMinLength']],
+            ['name', 'string', 'max' => self::MAX_STRING_LENGTH],
+
+            ['password', 'string', 'min' => \Yii::$app->params['user.passwordMinLength'], 'message' => 'Длина пароля от 8 символов до ' . self::MAX_PASSWORD_LENGTH . ' символов'],
+            ['password', 'string', 'max' => self::MAX_PASSWORD_LENGTH, 'message' => 'Длина пароля от 8 символов до ' . self::MAX_PASSWORD_LENGTH . ' символов'],
         ];
     }
 
@@ -48,15 +65,14 @@ class SignupForm extends Model
         if (!$this->validate()) {
             return null;
         }
-        
-        $user = new User();
-        $user->username = $this->username;
-        $user->email = $this->email;
-        $user->setPassword($this->password);
-        $user->generateAuthKey();
-        $user->generateEmailVerificationToken();
 
-        return $user->save() && $this->sendEmail($user);
+        $user = new User();
+        $user->name = $this->name;
+        $user->email = $this->email;
+        $user->city_id = $this->city;
+        $user->password = Yii::$app->security->generatePasswordHash($this->password);
+
+        return $user->save();
     }
 
     /**
