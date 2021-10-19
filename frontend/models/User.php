@@ -5,6 +5,7 @@ namespace app\models;
 use yii\db\Expression;
 use Yii;
 use yii\db\Query;
+use common\models\User as BaseUser;
 
 /**
  * This is the model class for table "user".
@@ -42,7 +43,7 @@ use yii\db\Query;
  * @property Task[] $tasksExecutor
  * @property UserNotification[] $userNotifications
  */
-class User extends \yii\db\ActiveRecord
+class User extends BaseUser
 {
     /**
      * {@inheritdoc}
@@ -443,4 +444,5 @@ class User extends \yii\db\ActiveRecord
 
         return $users;
     }
+
 }

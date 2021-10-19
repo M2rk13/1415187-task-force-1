@@ -17,6 +17,8 @@ use yii\widgets\Menu;
 AppAsset::register($this);
 $this->beginPage();
 
+$user = Yii::$app->user->getIdentity();
+
 ?>
 <!DOCTYPE html>
 <html lang="<?= Yii::$app->language ?>">
@@ -132,16 +134,20 @@ $this->beginPage();
                     <a href="view.html" class="link-regular">«Помочь с курсовой»</a>
                 </p>
             </div>
-            <div class="header__account">
-                <a class="header__account-photo">
-                    <img src="/img/user-photo.png"
-                         width="43" height="44"
-                         alt="Аватар пользователя">
-                </a>
-                <span class="header__account-name">
-                 Василий
+            <?php if (!empty($user)) { ?>
+                <div class="header__account">
+                    <a class="header__account-photo">
+                        <?php if (!empty($user->avatar)) { ?>
+                        <img src="/img/<?= $user->avatar ?>"
+                             width="43" height="44"
+                             alt="Аватар пользователя">
+                        <?php } ?>
+                    </a>
+                    <span class="header__account-name">
+                 <?= $user->name ?>
              </span>
-            </div>
+                </div>
+            <?php } ?>
             <div class="account__pop-up">
                 <ul class="account__pop-up-list">
                     <li>
@@ -151,7 +157,7 @@ $this->beginPage();
                         <a href="account.html">Настройки</a>
                     </li>
                     <li>
-                        <a href="landing.html">Выход</a>
+                        <a href="<?php echo Url::to(['landing/logout']); ?>">Выход</a>
                     </li>
                 </ul>
             </div>
@@ -211,7 +217,7 @@ $this->beginPage();
                             от 500 рублей в час.</p>
                     </div>
                 </div>
-                <?php } ?>
+            <?php } ?>
             <div class="page-footer__copyright">
                 <a>
                     <img class="copyright-logo"

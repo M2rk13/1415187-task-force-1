@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @var $tasks Task
+ * @var $tasks     Task
  * @var $loginForm LoginForm
  */
 
@@ -12,7 +12,6 @@ use yii\helpers\Html;
 use frontend\helpers\MainAsset;
 use yii\helpers\Url;
 use yii\widgets\ActiveForm;
-use yii\widgets\Pjax;
 
 $this->title = 'TaskForce';
 MainAsset::register($this);
@@ -249,37 +248,50 @@ $this->beginPage();
             </div>
         </div>
     </footer>
-    <section class="modal enter-form form-modal" id="enter-form">
+    <section class="enter-form form-modal" id="enter-form">
         <h2>Вход на сайт</h2>
-        <?php Pjax::begin(['id' => 'login']); ?>
-        <?php ActiveForm::begin([
-            'action' => ['site/login'],
-            'options' => ['data-pjax' => true]
-        ]); ?>
-        <p>
-            <?=Html::activeLabel($loginForm, 'email', ['class' => 'form-modal-description'])?>
-            <?=Html::activeTextInput($loginForm, 'email', ['class' => 'enter-form-email input input-middle', 'type' => 'email'])?>
-        </p>
-        <p>
-            <?=Html::activeLabel($loginForm, 'password', ['class' => 'form-modal-description'])?>
-            <?=Html::activePasswordInput($loginForm, 'password', ['class' => 'enter-form-email input input-middle'])?>
-        </p>
-        <?=Html::submitButton('Войти', ['class' => 'button'])?>
-        <?php ActiveForm::end()?>
-        <?php Pjax::end(); ?>
-        <button class="form-modal-close" type="button">Закрыть</button>
+        <?php $form = ActiveForm::begin(
+            [
+                'options' => [
+                    'tag' => false,
+                ],
+                'errorCssClass' => 'has-error',
+                'fieldConfig' => [
+                    'options' => ['tag' => 'p'],
+                    'inputOptions' => ['class' => 'enter-form-email input input-middle'],
+                    'errorOptions' => ['tag' => 'span'],
+                    'labelOptions' => ['class' => 'form-modal-description'],
+                ],
+                'enableAjaxValidation' => true,
+                'id' => 'loginForm',
+                'validateOnSubmit' => true
+            ]
+        );
+
+        echo $form->field(
+            $loginForm,
+            'email'
+        )->textInput(
+            [
+                'type' => 'email',
+            ]
+        );
+
+        echo $form->field(
+            $loginForm,
+            'password',
+        )->passwordInput();
+
+        echo Html::submitButton('Войти', ['class' => 'button']);
+
+        ActiveForm::end();
+
+        echo Html::button('Закрыть', ['class' => 'form-modal-close', 'id' => 'close-modal']);
+
+        ?>
     </section>
 </div>
 <?php $this->endBody() ?>
 </body>
 </html>
-<?php $this->endPage();
-
-$this->registerJs(
-    '$("document").ready(function(){
-            $("#login").on("pjax:end", function() {
-            $.pjax.reload({container:"#login"});  //Reload GridView
-        });
-    });'
-);
-?>
+<?php $this->endPage() ?>

@@ -10,7 +10,7 @@ use yii\web\Controller;
 use app\models\Task;
 use yii\web\NotFoundHttpException;
 
-class TasksController extends Controller
+class TasksController extends SecurityController
 {
     private const DEFAULT_TASKS_PAGINATION = 10;
 

@@ -17,10 +17,7 @@ class SignupForm extends Model
     public $city;
     public $password;
 
-    private const MAX_STRING_LENGTH = 128;
-    private const MAX_PASSWORD_LENGTH = 16;
-
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'email' => 'Электронная почта',
@@ -30,10 +27,7 @@ class SignupForm extends Model
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
 
@@ -45,22 +39,17 @@ class SignupForm extends Model
 
             ['email', 'trim'],
             ['email', 'email', 'message' => 'Введите валидный адрес электронной почты'],
-            ['email', 'string', 'max' => self::MAX_STRING_LENGTH],
+            ['email', 'string', 'max' => User::MAX_STRING_LENGTH],
             ['email', 'unique', 'targetClass' => '\app\models\User', 'message' => 'Пользователь с таким email уже существует'],
 
             ['name', 'string', 'max' => self::MAX_STRING_LENGTH],
 
-            ['password', 'string', 'min' => \Yii::$app->params['user.passwordMinLength'], 'message' => 'Длина пароля от 8 символов до ' . self::MAX_PASSWORD_LENGTH . ' символов'],
-            ['password', 'string', 'max' => self::MAX_PASSWORD_LENGTH, 'message' => 'Длина пароля от 8 символов до ' . self::MAX_PASSWORD_LENGTH . ' символов'],
+            ['password', 'string', 'min' => \Yii::$app->params['user.passwordMinLength'], 'tooShort' => 'Длина пароля от 8 символов до ' . User::MAX_PASSWORD_LENGTH . ' символов'],
+            ['password', 'string', 'max' => User::MAX_PASSWORD_LENGTH, 'tooLong' => 'Длина пароля от 8 символов до ' . User::MAX_PASSWORD_LENGTH . ' символов'],
         ];
     }
 
-    /**
-     * Signs user up.
-     *
-     * @return bool whether the creating new account was successful and email was sent
-     */
-    public function signup()
+    public function signup(): ?bool
     {
         if (!$this->validate()) {
             return null;
@@ -75,12 +64,7 @@ class SignupForm extends Model
         return $user->save();
     }
 
-    /**
-     * Sends confirmation email to user
-     * @param User $user user model to with email should be send
-     * @return bool whether the email was sent
-     */
-    protected function sendEmail($user)
+    protected function sendEmail($user): bool
     {
         return Yii::$app
             ->mailer

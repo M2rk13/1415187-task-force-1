@@ -9,7 +9,7 @@ use yii\web\Controller;
 use app\models\User;
 use yii\web\NotFoundHttpException;
 
-class UsersController extends Controller
+class UsersController extends SecurityController
 {
     private const DEFAULT_PORTFOLIO_PAGINATION = 3;
     private const DEFAULT_COMMENT_PAGINATION = 5;
