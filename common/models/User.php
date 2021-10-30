@@ -25,10 +25,11 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
-    public const STATUS_DELETED = 1;
-    public const STATUS_ACTIVE = 0;
-    public const MAX_STRING_LENGTH = 128;
-    public const MAX_PASSWORD_LENGTH = 16;
+    const STATUS_DELETED = 0;
+    const STATUS_INACTIVE = 9;
+    const STATUS_ACTIVE = 10;
+    const USER_DELETED = 1;
+    const USER_NOT_DELETED = 0;
 
 
     /**
@@ -65,7 +66,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findIdentity($id): ?User
     {
-        return static::findOne($id);
+        return static::findOne(['id' => $id, 'is_deleted' => self::USER_NOT_DELETED]);
     }
 
     /**

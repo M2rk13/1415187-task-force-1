@@ -2630,3 +2630,20 @@ footer {
 .has-error span {
   color: #FF116E; }
 /*# sourceMappingURL=style.css.map */
+
+.create__task .error-summary {
+  height: 0;
+  position: relative;
+  left: 620px;
+  top: -525px;
+}
+
+.create__task .warning-item--error {
+  position: absolute;
+}
+
+.warning-item--error ul {
+  list-style-type: none;
+  position: relative;
+  left: -35px;
+}

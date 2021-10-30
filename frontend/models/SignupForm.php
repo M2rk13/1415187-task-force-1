@@ -17,6 +17,8 @@ class SignupForm extends Model
     public $city;
     public $password;
 
+    public const MESSAGE_MAX_STRING_LENGTH = 'Максимальная допустимая длина: ' . User::MAX_STRING_LENGTH . 'символов';
+
     public function attributeLabels(): array
     {
         return [
@@ -39,13 +41,13 @@ class SignupForm extends Model
 
             ['email', 'trim'],
             ['email', 'email', 'message' => 'Введите валидный адрес электронной почты'],
-            ['email', 'string', 'max' => User::MAX_STRING_LENGTH],
-            ['email', 'unique', 'targetClass' => '\app\models\User', 'message' => 'Пользователь с таким email уже существует'],
+            ['email', 'string', 'max' => User::MAX_STRING_LENGTH, 'message' => self::MESSAGE_MAX_STRING_LENGTH],
+            ['email', 'unique', 'targetClass' => User::class, 'message' => 'Пользователь с таким email уже существует'],
 
-            ['name', 'string', 'max' => self::MAX_STRING_LENGTH],
+            ['name', 'string', 'max' => User::MAX_STRING_LENGTH, 'message' => self::MESSAGE_MAX_STRING_LENGTH],
 
-            ['password', 'string', 'min' => \Yii::$app->params['user.passwordMinLength'], 'tooShort' => 'Длина пароля от 8 символов до ' . User::MAX_PASSWORD_LENGTH . ' символов'],
-            ['password', 'string', 'max' => User::MAX_PASSWORD_LENGTH, 'tooLong' => 'Длина пароля от 8 символов до ' . User::MAX_PASSWORD_LENGTH . ' символов'],
+            ['password', 'string', 'min' => \Yii::$app->params['user.passwordMinLength'], 'tooShort' => 'Длина пароля от ' . \Yii::$app->params['user.passwordMinLength'] . ' до ' . User::MAX_PASSWORD_LENGTH . ' символов'],
+            ['password', 'string', 'max' => User::MAX_PASSWORD_LENGTH, 'tooLong' => 'Длина пароля от ' . \Yii::$app->params['user.passwordMinLength'] . ' до ' . User::MAX_PASSWORD_LENGTH . ' символов'],
         ];
     }
 

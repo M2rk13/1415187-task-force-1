@@ -45,6 +45,8 @@ use common\models\User as BaseUser;
  */
 class User extends BaseUser
 {
+    public const MAX_STRING_LENGTH = 128;
+    public const MAX_PASSWORD_LENGTH = 16;
     /**
      * {@inheritdoc}
      */
@@ -338,16 +340,6 @@ class User extends BaseUser
     }
 
     /**
-     * Gets query for [[Specialisation]].
-     *
-     * @return \yii\db\ActiveQuery|SpecialisationQuery
-     */
-    public function getSpecialisation()
-    {
-        return $this->hasMany(Specialisation::className(), ['executor_id' => 'id']);
-    }
-
-    /**
      * {@inheritdoc}
      * @return UserQuery the active query used by this AR class.
      */
@@ -443,6 +435,20 @@ class User extends BaseUser
         }
 
         return $users;
+    }
+
+    /**
+     * Проверка пользователя на тип (исполнитель или заказчик)
+     */
+    public static function isUserExecutor($id): bool
+    {
+        $currentUser = self::findOne($id);
+
+        if (empty($currentUser->specialisations ?? null)) {
+            return false;
+        }
+
+        return true;
     }
 
 }

@@ -96,7 +96,7 @@ $user = Yii::$app->user->getIdentity();
                         'items' => [
                             ['label' => 'Задания', 'url' => ['tasks/']],
                             ['label' => 'Исполнители', 'url' => ['users/']],
-                            ['label' => 'Создать задание', 'url' => ['']],
+                            ['label' => 'Создать задание', 'url' => ['task/create']],
                             ['label' => 'Мой профиль', 'url' => ['']],
                         ],
                         'options' => [

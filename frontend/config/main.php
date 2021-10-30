@@ -49,6 +49,7 @@ return [
                 'signup' => 'landing/signup',
                 'landing' => 'landing/login',
                 'logout' => 'landing/logout',
+                'task/create' => 'tasks/create',
             ],
         ],
     ],

@@ -64,10 +64,10 @@ class LandingController extends SecurityController
             $this->homeRedirect();
         }
 
-        $city = City::getCities();
+        $cities = City::getCities();
 
         return $this->render(self::SIGNUP_PAGE_PATH, [
-            'city' => $city,
+            'cities' => $cities,
             'signupForm' => $signUp,
         ]);
     }

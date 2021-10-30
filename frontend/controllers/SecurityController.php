@@ -18,13 +18,13 @@ abstract class SecurityController extends Controller
 
                 'rules' => [
                     [
-                        'actions' => ['index', 'view', 'logout'],
+                        'actions' => ['index', 'view', 'logout', 'create'],
                         'allow' => true,
                         'roles' => ['@'],
 
                     ],
                     [
-                        'actions' => ['index', 'view', 'logout'],
+                        'actions' => ['index', 'view', 'logout',  'create'],
                         'allow' => false,
                         'roles' => ['?'],
                         'denyCallback' => function ($rule, $action) {

@@ -53,7 +53,7 @@ $this->title = 'Страница пользователя ' . $user->name;
             <div class="user__card-info">
                 <h3 class="content-view__h3">Специализации</h3>
                 <div class="link-specialization">
-                    <?php foreach ($user->specialisation as $spec) { ?>
+                    <?php foreach ($user->specialisations as $spec) { ?>
                         <a href="browse.html" class="link-regular"><?= $spec->category->name ?></a>
                     <?php } ?>
                 </div>

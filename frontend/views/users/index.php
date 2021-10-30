@@ -52,7 +52,7 @@ $this->title = 'Исполнители';
                     ) ?> назад</span>
             </div>
             <div class="link-specialization user__search-link--bottom">
-                <?php foreach ($user->specialisation as $spec) { ?>
+                <?php foreach ($user->specialisations as $spec) { ?>
                     <a href="browse.html" class="link-regular"><?= $spec->category->name ?></a>
                 <?php } ?>
             </div>

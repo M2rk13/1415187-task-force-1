@@ -5,7 +5,6 @@ namespace frontend\controllers;
 use frontend\models\UsersFilter;
 use Yii;
 use yii\data\Pagination;
-use yii\web\Controller;
 use app\models\User;
 use yii\web\NotFoundHttpException;
 
